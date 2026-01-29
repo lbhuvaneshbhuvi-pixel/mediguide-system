@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Dr. A. Kumar",
+    "specialty": "General Physician",
+    "hospital": "City Health Clinic",
+    "phone": "+91-44-1234-5678",
+    "lat": 13.0827,
+    "lng": 80.2707,
+    "address": "100 Anna Salai, Chennai"
+  },
+  {
+    "name": "Dr. S. Meena",
+    "specialty": "ENT",
+    "hospital": "Health Care Hospital",
+    "phone": "+91-44-2345-6789",
+    "lat": 13.0352,
+    "lng": 80.2446,
+    "address": "22 T. Nagar, Chennai"
+  },
+  {
+    "name": "Dr. R. Iyer",
+    "specialty": "Cardiologist",
+    "hospital": "Metro Cardiac Center",
+    "phone": "+91-44-3456-7890",
+    "lat": 13.0674,
+    "lng": 80.2376,
+    "address": "12 Mylapore, Chennai"
+  },
+  {
+    "name": "Dr. L. Priya",
+    "specialty": "Pediatrician",
+    "hospital": "Sunrise Children Hospital",
+    "phone": "+91-44-4567-8901",
+    "lat": 13.0910,
+    "lng": 80.2486,
+    "address": "5 Adyar, Chennai"
+  },
+  {
+    "name": "City General Hospital",
+    "specialty": "Hospital",
+    "hospital": "City General Hospital",
+    "phone": "+91-44-5678-9012",
+    "lat": 13.0800,
+    "lng": 80.2700,
+    "address": "Central Road, Chennai"
+  }
+]

@@ -1,0 +1,46 @@
+// Prisma schema for MySQL database to store user profiles, feedback and search history.
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model Medicine {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(255)
+  dosage      String?  @db.Text
+  sideEffects String?  @db.Text
+  precautions String?  @db.Text
+  alternatives String? @db.Text
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+}
+
+model Feedback {
+  id     Int      @id @default(autoincrement())
+  userId String?  @db.VarChar(255)
+  user   User?    @relation(fields: [userId], references: [id])
+  text   String   @db.Text
+  time   DateTime @default(now())
+}
+
+model SearchHistory {
+  id     Int      @id @default(autoincrement())
+  userId String?  @db.VarChar(255)
+  user   User?    @relation(fields: [userId], references: [id])
+  query  String   @db.Text
+  result String?  @db.Text
+  time   DateTime @default(now())
+}
+
+model Admin {
+  id        String   @id @default(cuid()) @db.VarChar(255)
+  email     String?  @db.VarChar(255)
+  name      String?  @db.VarChar(255)
+  apiKey    String   @unique @db.VarChar(255)
+  role      String?  @db.VarChar(64)
+  createdAt DateTime @default(now())
+}
+

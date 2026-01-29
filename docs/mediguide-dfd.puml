@@ -1,0 +1,52 @@
+@startuml
+' Mediguide Data Flow Diagram (Level 1)
+' Render with PlantUML: java -jar plantuml.jar mediguide-dfd.puml
+
+left to right direction
+skinparam componentStyle rectangle
+
+actor User as U
+rectangle "Web Client (Next.js)" as Client {
+  [Search UI]
+  [Voice Input]
+  [Results Display]
+  [Profile / Settings]
+}
+
+rectangle "API Layer (Next.js Server Routes)" as API {
+  component "/api/search-history" as SearchAPI
+  component "/api/feedback" as FeedbackAPI
+  component "/api/users" as UsersAPI
+  component "/api/admin/*" as AdminAPI
+  component "/api/ai/symptom" as AIProxy
+}
+
+database "MySQL (Prisma)" as DB
+rectangle "Firebase Auth" as Firebase
+rectangle "Genkit / AI Services" as Genkit
+
+' Flows
+U --> Client: Enter symptoms / Voice input
+Client --> AIProxy: POST symptoms (user token)
+AIProxy --> Genkit: Request inference (symptom->medicine)
+Genkit --> AIProxy: Inference result
+AIProxy --> Client: Result (includes language)
+Client -> SearchAPI: POST save search (Bearer idToken)
+SearchAPI -> DB: INSERT SearchHistory (userId)
+Client -> FeedbackAPI: POST feedback (Bearer idToken)
+FeedbackAPI -> DB: INSERT Feedback (userId)
+Client -> UsersAPI: GET/POST profile (Bearer idToken)
+UsersAPI -> DB: SELECT/UPSERT User
+
+' Admin
+U -> AdminAPI: (admin key) View users/feedback/searches
+AdminAPI -> DB: SELECT/DELETE as requested
+
+' Auth mapping
+Client -> Firebase: Sign-in (UI)
+Firebase -> Client: ID Token
+API .. Firebase: Verify ID Token -> get firebaseUid
+API -> UsersAPI: map firebaseUid -> local mediNNN id (via DB)
+UsersAPI -> DB: SELECT/INSERT User (mediNNN)
+
+@enduml

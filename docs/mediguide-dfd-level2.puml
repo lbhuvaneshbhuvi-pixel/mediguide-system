@@ -1,0 +1,74 @@
+@startuml
+' Mediguide Data Flow Diagram (Level 2)
+' Includes TTS, localStorage/pending-sync, cloud-TTS fallback, and admin flows
+
+left to right direction
+skinparam componentStyle rectangle
+
+actor User as U
+rectangle "Web Client (Next.js)" as Client {
+  component "1. Search UI / Voice Input" as SearchUI
+  component "2. TTS Player (Web Speech API)" as TTSClient
+  component "3. Local Storage / Pending Sync" as LocalStore
+  component "4. Sync Worker" as SyncWorker
+}
+
+rectangle "API Layer (Next.js Server Routes)" as API {
+  component "/api/ai/symptom" as AIProxy
+  component "/api/search-history" as SearchAPI
+  component "/api/feedback" as FeedbackAPI
+  component "/api/users" as UsersAPI
+  component "/api/admin/*" as AdminAPI
+  component "/api/tts (opt)" as CloudTTSAPI
+}
+
+database "MySQL (Prisma)" as DB
+rectangle "Firebase Auth" as Firebase
+rectangle "Genkit / AI Services" as Genkit
+rectangle "Cloud TTS Provider (opt)" as CloudTTS
+
+' User search interaction
+U --> SearchUI: Enter symptoms / Voice input
+SearchUI --> AIProxy: POST symptoms + ID token
+AIProxy --> Genkit: Request inference (symptom->medicine)
+Genkit --> AIProxy: Inference result (language tagged)
+AIProxy --> SearchUI: Return recommendations
+
+' Client side - save & speak
+SearchUI -> LocalStore: Save local history + pending sync
+SearchUI -> TTSClient: Request speak (EN / TA)
+TTSClient --> User: Play audio (if voice available)
+
+' Pending sync
+SyncWorker --> LocalStore: Read pending entries
+SyncWorker --> SearchAPI: POST pending (with ID token)
+SearchAPI --> DB: INSERT SearchHistory
+SyncWorker <-- SearchAPI: OK
+SyncWorker --> LocalStore: Remove synced entries
+
+' Server side - authenticated operations
+SearchUI -> UsersAPI: GET/POST profile (ID token)
+UsersAPI .. Firebase: Verify ID token -> obtain firebaseUid
+UsersAPI -> DB: SELECT/UPSERT User (map firebaseUid -> mediNNN)
+
+SearchUI -> FeedbackAPI: POST feedback (ID token)
+FeedbackAPI -> DB: INSERT Feedback (userId)
+
+' Admin flows
+U -> AdminAPI: (admin key) View users/feedback/searches
+AdminAPI -> DB: SELECT/DELETE as requested
+
+' Cloud TTS fallback
+TTSClient -> CloudTTSAPI: Request audio (text, lang) [if local voices missing]
+CloudTTSAPI --> CloudTTS: Synthesize audio (provider)
+CloudTTS --> CloudTTSAPI: Audio data
+CloudTTSAPI --> TTSClient: Serve audio URL / base64
+TTSClient --> User: Play fetched audio
+
+' Notes
+note bottom of Client
+  - Local Storage keys: `medi_search_history_local`, `medi_pending_syncs`
+  - TTS helpers: `initVoices()`, `ensureVoiceForLang()`, `expandNumbersToTamil()`
+end note
+
+@enduml

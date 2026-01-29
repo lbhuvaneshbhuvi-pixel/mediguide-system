@@ -1,0 +1,66 @@
+
+{
+  "entities": {
+    "UserAccount": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserAccount",
+      "type": "object",
+      "description": "Stores user account information for MediGuide application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user account."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address for login and communication.",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the user"
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the user"
+        },
+        "signUpDate": {
+          "type": "string",
+          "description": "Date and time when the user signed up.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "email"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserAccount",
+          "schema": {
+            "$ref": "#/backend/entities/UserAccount"
+          },
+          "description": "Stores user account information. Path-based ownership enforces that only the user with the corresponding UID can access their document.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user account, matching the Firebase Auth UID."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "Given the requirements for user authentication and account information storage, the design will leverage Firebase Authentication for handling user sign-up, sign-in, and password recovery. Firestore will be used to store user account details. Since the application requires a \"Remember me\" functionality, this will primarily be handled on the front end using local storage or cookies. The structure prioritizes ease of access for user data while adhering to the principles of Authorization Independence, Clarity of Intent, and DBAC (Database Authentication and Authorization Control).  Path-based ownership secures data in the `users` collection. All security rules will be based solely on `request.auth.uid` for authentication, without relying on `get()` calls for authorization.\n\nTo achieve Authorization Independence (Strategy A), there is no denormalization necessary because access control is based directly on the authenticated user's ID and doesn't rely on parent documents or complex relationships. The application directly uses path-based ownership for user accounts, making rules straightforward and efficient. This naturally supports the required QAPs because list operations are scoped to the individual user.\n\nStructural Segregation (Strategy B) is achieved by storing all user accounts in the `/users/{userId}` collection. This ensures a homogenous security posture: every document in this collection has the same access control requirements.\n\nAccess Modeling (Strategy C) is implemented through path-based ownership, ensuring that only the authenticated user can access their own account data.  No collaborative data structures (like membership maps) are needed because user accounts are fundamentally private.\n\nData Clarity and Predictability (Strategy D) are ensured through explicit state modeling. The `UserAccount` schema has defined properties (email, firstName, lastName, signUpDate), and we avoid dynamic keys. Semantic naming conventions are used in the path structure `/users/{userId}`."
+  }
+}

@@ -1,0 +1,213 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Mediguide Project Report</title>
+  <style>
+    body { font-family: Arial, Helvetica, sans-serif; line-height: 1.4; color: #111; padding: 24px; }
+    h1 { font-size: 24pt; margin-bottom: 8px; }
+    h2 { font-size: 18pt; margin-top: 20px; }
+    h3 { font-size: 14pt; margin-top: 14px; }
+    p { margin: 8px 0; }
+    ul { margin: 6px 0 12px 20px; }
+    pre { white-space: pre-wrap; }
+    .small { font-size: 10pt; color: #444 }
+    .chapter { page-break-after: always; }
+  </style>
+</head>
+<body>
+  <h1>Mediguide Project Report</h1>
+
+  <div class="chapter">
+    <h2>CHAPTER I — INTRODUCTION</h2>
+
+    <h3>1.1 Overview of the Project</h3>
+    <p>Mediguide is a bilingual (English + Tamil) web application that helps users convert symptom descriptions into medically-informed guidance, locate nearby health providers, and keep a personal search history. Built with Next.js (App Router), React and TypeScript on the front end and Next.js server routes, Firebase Authentication, and Prisma + MySQL on the backend, Mediguide combines lightweight client-side TTS, Genkit-based AI flows for symptom → medicine recommendations, and open-source places lookup (OpenStreetMap/Overpass) for provider discovery.</p>
+
+    <p><strong>Key features</strong></p>
+    <ul>
+      <li>Secure user authentication (Firebase) and local mediNNN mapping for pseudonymous IDs.</li>
+      <li>Bilingual TTS (English + Tamil) with Tamil number expansion and "speak both" option.</li>
+      <li>Local-first persistent search history (localStorage) with server sync on login.</li>
+      <li>Free provider lookup using OpenStreetMap/Overpass (no paid API key required).</li>
+      <li>AI-driven symptom → medicine recommendation flows with structured outputs.</li>
+      <li>Profile dialog housing Profile / Feedback / History with per-item deletion, clear-all, and export.</li>
+    </ul>
+
+    <h3>1.2 Problem Definition</h3>
+    <p>- Fragmented user experience: symptom guidance, provider lookup, and history are often scattered across multiple apps.</p>
+    <p>- Language accessibility gaps: lack of quality Tamil TTS and localized phrasing in many medical apps.</p>
+    <p>- Offline & persistence limitations: users risk losing history when moving between devices or when unauthenticated.</p>
+    <p>- Cost barriers: paid provider APIs add expense and complexity for lightweight apps.</p>
+    <p>- Usability: discoverability and workflow for saving/searching symptoms can be improved.</p>
+
+    <h3>1.3 Objectives of the Project</h3>
+    <p>- Centralize symptom guidance, provider lookup, and history in a simple dashboard.</p>
+    <p>- Provide bilingual TTS and accessible controls, including Tamil number handling.</p>
+    <p>- Persist search history locally and sync on login; keep server-side admin tools for moderation.</p>
+    <p>- Use open-data sources for provider lookup to avoid API costs.</p>
+    <p>- Design a responsive UI suitable for desktop and tablet, and plan a mobile-friendly web version.</p>
+    <p>- Provide users with data portability and privacy controls — allow exporting, deleting, and selective syncing of search history and personal settings.</p>
+  </div>
+
+  <div class="chapter">
+    <h2>CHAPTER II — SYSTEM ANALYSIS</h2>
+
+    <h3>2.1 Existing System</h3>
+    <p>Before Mediguide, users relied on scattered websites or paid services that typically offered results primarily in English, required paid APIs for provider lookup, and lacked an integrated search → history → provider workflow.</p>
+
+    <h3>2.1.1 Disadvantages of Existing Systems</h3>
+    <ul>
+      <li>Language limitations (insufficient Tamil support)</li>
+      <li>Dependence on paid APIs</li>
+      <li>No offline-first or local-persistence options</li>
+      <li>Fragmented UX across features</li>
+    </ul>
+
+    <h3>2.2 Proposed System</h3>
+    <p>Mediguide proposes a privacy-minded, bilingual solution with AI-based symptom → medicine recommendations, local-first history, Overpass-based provider lookup, and bilingual TTS.</p>
+
+    <h3>2.2.1 Advantages</h3>
+    <ul>
+      <li>Cost-effective provider lookup</li>
+      <li>Improved Tamil accessibility</li>
+      <li>Local-first persistence for offline resilience</li>
+      <li>Centralized dashboard with profile dialog for feedback/history</li>
+    </ul>
+
+    <h3>2.3 Feasibility Study</h3>
+    <p><strong>Economic Feasibility:</strong> Open-source tools and Overpass reduce costs; hosting and managed MySQL are modest for small deployments.</p>
+    <p><strong>Technical Feasibility:</strong> Next.js + Firebase + Prisma are stable choices; Web Speech API supports client-side TTS.</p>
+    <p><strong>Operational Feasibility:</strong> Simple UI and documentation reduce training costs; admin routes allow moderation.</p>
+  </div>
+
+  <div class="chapter">
+    <h2>CHAPTER III — SYSTEM SPECIFICATION</h2>
+
+    <h3>3.1 Hardware Recommendation</h3>
+    <ul>
+      <li>Developer machine: Intel i5, 8GB RAM, 50GB disk</li>
+      <li>Server: 1–2 vCPU, 2–4GB RAM, managed MySQL or cloud SQL</li>
+      <li>Client: modern browser supporting Web Speech API (Chrome, Edge)</li>
+    </ul>
+
+    <h3>3.2 Software Stack</h3>
+    <ul>
+      <li>Frontend: Next.js (App Router), React, TypeScript, TailwindCSS</li>
+      <li>Backend: Next.js server routes, Node.js, Prisma Client, MySQL</li>
+      <li>Auth: Firebase Authentication</li>
+      <li>TTS: Web Speech API (client)</li>
+      <li>Provider lookup: Overpass (OpenStreetMap)</li>
+      <li>AI flows: Genkit-based server flows</li>
+    </ul>
+
+    <h3>3.2.1 Front End</h3>
+    <p>Header with profile dialog (Profile / Feedback / History); Dashboard with centered cards; Results display with TTS controls.</p>
+
+    <h3>3.2.2 Back End</h3>
+    <p>Routes implemented include: <em>POST /api/search-history, GET /api/search-history, DELETE /api/search-history, DELETE /api/search-history/{id}, POST /api/feedback, POST /api/places, GET/POST /api/users</em>; admin routes for seed/clear/export.</p>
+  </div>
+
+  <div class="chapter">
+    <h2>CHAPTER IV — SYSTEM DESCRIPTION</h2>
+
+    <h3>4.1 Modules</h3>
+    <ul>
+      <li>Authentication Module — Firebase + mediNNN mapping</li>
+      <li>Symptom → Medicine Recommendation (AI) Module</li>
+      <li>TTS Module — bilingual playback (English/Tamil)</li>
+      <li>Search History Module — local-first storage + server sync</li>
+      <li>Provider Lookup Module — Overpass server queries</li>
+      <li>Profile & Feedback Module — tabbed dialog with management</li>
+      <li>Admin Module — seed, clear, export, basic analytics</li>
+    </ul>
+
+    <h3>4.2 Module Interactions</h3>
+    <p>- User searches → AI flow → results shown with optional TTS.</p>
+    <p>- User saves search locally → queued for sync on login → posted to /api/search-history.</p>
+    <p>- Profile dialog fetches merged history and supports delete/clear/export.</p>
+    <p>- Provider lookup queries /api/places and presents nearby providers.</p>
+
+    <h3>4.3 Database Design (summary)</h3>
+    <p>Suggested models (Prisma-like): User, SearchHistory, Feedback, Provider, MedicineRecommendation.</p>
+  </div>
+
+  <div class="chapter">
+    <h2>CHAPTER V — SYSTEM TESTING</h2>
+
+    <h3>5.1 Unit Testing</h3>
+    <p>Unit tests: auth helpers, mediNNN mapping, local-persistence helpers, TTS Tamil number expansion, Overpass query builder.</p>
+
+    <h3>5.2 Integration Testing</h3>
+    <p>Integration tests: save locally → sync after login; per-item delete removes server record; Overpass responses are transformed correctly; AI flows validate schema.</p>
+
+    <h3>5.3 Validation & Acceptance</h3>
+    <p>Acceptance checks: profile dialog shows history and allows deletion/export; TTS speak both languages without errors.</p>
+  </div>
+
+  <div class="chapter">
+    <h2>CHAPTER VI — SYSTEM IMPLEMENTATION</h2>
+
+    <h3>6.1 Coding</h3>
+    <p>Tech stack: Next.js, React, TypeScript, TailwindCSS, Prisma, MySQL, Firebase Auth. Server routes validated via Firebase ID tokens; Prisma for DB queries; TTS behind feature flag for graceful degradation.</p>
+
+    <h3>6.2 Deployment</h3>
+    <p><strong>Local dev</strong></p>
+    <pre>npm install
+npm run dev</pre>
+
+    <p><strong>Production</strong></p>
+    <p>Host on Vercel or a Node host; use managed MySQL. Store Firebase service credentials and DB URL in environment variables; enable HTTPS and security headers.</p>
+
+    <h3>6.3 Documentation & Training</h3>
+    <p>Provide README, onboarding docs, and developer notes about Overpass endpoints and fallback behavior.</p>
+  </div>
+
+  <div class="chapter">
+    <h2>CHAPTER VII — CONCLUSION & FUTURE ENHANCEMENTS</h2>
+
+    <h3>7.1 Conclusion</h3>
+    <p>Mediguide integrates AI-driven symptom guidance, bilingual TTS, provider lookup using open data, and a local-first history experience into a single, privacy-minded web app. It reduces costs, improves accessibility for Tamil speakers, and provides a practical tool for users seeking basic medical guidance and local care options.</p>
+
+    <h3>7.2 Future Enhancements</h3>
+    <ul>
+      <li>Mobile-first responsive redesign and PWA with offline caching</li>
+      <li>Appointment booking and richer provider profiles</li>
+      <li>Telemedicine (WebRTC) with scheduling</li>
+      <li>Encrypted-at-rest patient notes and attachments</li>
+      <li>Multi-turn AI flows and admin analytics dashboards</li>
+    </ul>
+  </div>
+
+  <div>
+    <h3>Appendices</h3>
+    <h4>A — Sample API Endpoints</h4>
+    <ul>
+      <li>POST /api/search-history — save a search (auth)</li>
+      <li>GET /api/search-history — fetch user's history (auth)</li>
+      <li>DELETE /api/search-history — clear all user history (auth)</li>
+      <li>DELETE /api/search-history/{id} — delete single entry (auth)</li>
+      <li>POST /api/places — Overpass-based provider lookup</li>
+      <li>POST /api/feedback — post feedback (auth)</li>
+      <li>GET/POST /api/users — profile read/write (auth)</li>
+      <li>Admin: /api/admin/search-history, /api/admin/clear, /api/admin/seed</li>
+    </ul>
+
+    <h4>B — Quick Setup (dev)</h4>
+    <pre>git clone &lt;repo&gt;
+cd mediguide
+npm install
+# set environment variables (DATABASE_URL, FIREBASE_SERVICE_ACCOUNT etc.)
+npm run dev</pre>
+
+    <h4>C — Sample Test Cases</h4>
+    <ul>
+      <li>Unit test: TTS Tamil number expansion</li>
+      <li>Integration test: Save search → login → server contains new record</li>
+      <li>Acceptance test: Speak both languages without error</li>
+    </ul>
+
+    <p class="small">Report generated from the Mediguide project workspace.</p>
+  </div>
+</body>
+</html>
